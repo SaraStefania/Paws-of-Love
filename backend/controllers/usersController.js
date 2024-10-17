@@ -36,7 +36,33 @@ postUsers = (req, res) => {
             res.status(201).json({ "Was added correctly": results.affectedRows });
         })
 }
-
+patchUsers = (req, res) => {
+    const id = req.params.id
+    const { nombre, edad } = req.body
+    let query = ""
+    let values = []
+    if (nombre !== undefined) {
+        query = "UPDATE users SET nombre = ? WHERE id = ?"
+        values = [nombre, id]
+    } else if (edad !== undefined) {
+        query = "UPDATE users SET edad = ? WHERE id = ?"
+        values = [edad, id]
+    } else {
+        console.error("No information provide")
+        return
+    }
+    connection.query(query, values,
+        (error, results) => {
+            if (error) {
+                console.error('Error updating:', error);
+                res.status(500).send('error');
+            }
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            res.status(201).json({ "It was updated correctly": results.affectedRows })
+        })
+}
 deleteUsers = (req, res) => {
     const id = req.params.id
     connection.query("DELETE FROM users WHERE id = ?", [id],
@@ -53,5 +79,6 @@ module.exports = {
     getUsers,
     postUsers,
     deleteUsers,
-    getUsersId
+    getUsersId,
+    patchUsers
 }
