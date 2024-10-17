@@ -5,13 +5,26 @@ getUsers = (req, rest) => {
     connection.query("SELECT * FROM users",
         (error, results) => {
             if (error) {
-                console.error('Error ejecutando la consulta:', error);
+                console.error('Error while executing the query:', error);
                 rest.status(500).send('error');
             }
             rest.json(results)
         });
 };
-
+getUsersId = (req, res) => {
+    const id = req.params.id
+    connection.query("SELECT * FROM users WHERE id = ?", [id],
+        (error, results) => {
+            if (error) {
+                console.error('Error while executing the query by id: ', error);
+                res.status(500).send('error');
+            }
+            if (results.length === 0) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            res.json(results)
+        })
+}
 postUsers = (req, res) => {
     const { nombre, edad } = req.body
     connection.query("INSERT INTO users(nombre, edad) VALUES (?,?)", [nombre, edad],
@@ -20,7 +33,7 @@ postUsers = (req, res) => {
                 console.error('Error adding:', error);
                 res.status(500).send('error');
             }
-            res.status(201).json({"Was added correctly": results.affectedRows });
+            res.status(201).json({ "Was added correctly": results.affectedRows });
         })
 }
 
@@ -31,7 +44,7 @@ deleteUsers = (req, res) => {
             if (error) {
                 res.status(500).send('error');
             }
-            res.status(201).json({"The user was delete": results.affectedRows })
+            res.status(201).json({ "The user was delete": results.affectedRows })
 
         })
 
@@ -39,5 +52,6 @@ deleteUsers = (req, res) => {
 module.exports = {
     getUsers,
     postUsers,
-    deleteUsers
+    deleteUsers,
+    getUsersId
 }

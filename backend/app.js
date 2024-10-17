@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Ruta principal
 app.get('/', (req, res) => {
-  res.send('Hello cambrio!')
+  res.send('Main page')
   next()
 })
 
@@ -21,5 +21,5 @@ app.use('/users', usersRoute);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`)
+  console.log(`Server started and listening on port ${PORT}`)
 })
