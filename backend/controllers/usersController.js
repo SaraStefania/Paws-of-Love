@@ -14,18 +14,30 @@ getUsers = (req, rest) => {
 
 postUsers = (req, res) => {
     const { nombre, edad } = req.body
-    connection.query("INSERT INTO users(nombre, edad) VALUES (?,?)",
-        [nombre, edad],
+    connection.query("INSERT INTO users(nombre, edad) VALUES (?,?)", [nombre, edad],
         (error, results) => {
             if (error) {
                 console.error('Error adding:', error);
                 res.status(500).send('error');
             }
-            res.status(201).json({ message: "Was added correctly", affectedRows: results.affectedRows });
+            res.status(201).json({"Was added correctly": results.affectedRows });
+        })
+}
+
+deleteUsers = (req, res) => {
+    const id = req.params.id
+    connection.query("DELETE FROM users WHERE id = ?", [id],
+        (error, results) => {
+            if (error) {
+                res.status(500).send('error');
+            }
+            res.status(201).json({"The user was delete": results.affectedRows })
+
         })
 
 }
 module.exports = {
     getUsers,
-    postUsers
+    postUsers,
+    deleteUsers
 }
