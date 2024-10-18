@@ -1,5 +1,5 @@
 //conexion a la base de datos
-const { connection } = require('../config/config.db');
+const { connection } = require('../config/db');
 
 //Check if the user exists
 const userExists = (id) => {
