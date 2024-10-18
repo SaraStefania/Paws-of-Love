@@ -1,18 +1,49 @@
 //conexion a la base de datos
-const { connection } = require('../config/config.db')
+const { connection } = require('../config/config.db');
 
-getUsers = (req, rest) => {
+//Check if the user exists
+const userExists = (id) => {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM users WHERE id = ?', [id], 
+            (error, results) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(results.length > 0); 
+        });
+    });
+};
+//Extract keys and values ​​from an object
+const keysAndValues = (body) => {
+    let keys = [];
+    let values = [];
+
+    for (const [key, value] of Object.entries(body)) {
+        keys.push(`${key} = ?`);
+        values.push(value);
+    }
+
+    return { keys, values };
+};
+
+//Search all records
+getUsers = (req, res) => {
     connection.query("SELECT * FROM users",
         (error, results) => {
             if (error) {
                 console.error('Error while executing the query:', error);
-                rest.status(500).send('error');
+                res.status(500).send('error');
             }
-            rest.json(results)
+            res.json(results)
         });
 };
-getUsersId = (req, res) => {
-    const id = req.params.id
+//Search records by id
+getUsersId = async(req, res) => {
+     const id = req.params.id;
+    const exists = await userExists(id);
+    if (!exists) {
+        return res.status(404).json({ message: 'User not found' });
+    }
     connection.query("SELECT * FROM users WHERE id = ?", [id],
         (error, results) => {
             if (error) {
@@ -24,9 +55,11 @@ getUsersId = (req, res) => {
             }
             res.json(results)
         })
-}
+};
+//Create record
 postUsers = (req, res) => {
     const { nombre, edad } = req.body
+
     connection.query("INSERT INTO users(nombre, edad) VALUES (?,?)", [nombre, edad],
         (error, results) => {
             if (error) {
@@ -36,35 +69,72 @@ postUsers = (req, res) => {
             res.status(201).json({ "Was added correctly": results.affectedRows });
         })
 }
-patchUsers = (req, res) => {
+
+//Edit some records
+patchUsers = async (req, res) => {
     const id = req.params.id
-    const { nombre, edad } = req.body
+    const body = req.body
     let query = ""
-    let values = []
-    if (nombre !== undefined) {
-        query = "UPDATE users SET nombre = ? WHERE id = ?"
-        values = [nombre, id]
-    } else if (edad !== undefined) {
-        query = "UPDATE users SET edad = ? WHERE id = ?"
-        values = [edad, id]
-    } else {
-        console.error("No information provide")
-        return
+
+    const exists = await userExists(id);
+    if (!exists) {
+        return res.status(404).json({ message: 'User not found' });
     }
+
+    const { keys, values } = keysAndValues(body);
+    if (keys.length === 0) {
+        return res.status(400).json({ message: "No fields to update" });
+    }
+
+    query = `UPDATE users SET ${keys.join(',')} WHERE id = ?`
+    values.push(id)
+
     connection.query(query, values,
         (error, results) => {
             if (error) {
                 console.error('Error updating:', error);
                 res.status(500).send('error');
             }
-            if (results.affectedRows === 0) {
-                return res.status(404).json({ message: "User not found" });
-            }
-            res.status(201).json({ "It was updated correctly": results.affectedRows })
+            res.status(201).json({ "The data was updated successfully": results.affectedRows })
         })
 }
-deleteUsers = (req, res) => {
+//Edit all records
+putUsers = async(req, res) => {
     const id = req.params.id
+    const body = req.body
+    let query = ''
+    const requiredField = ['nombre', 'edad']
+
+    const exists = await userExists(id);
+    if (!exists) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const missingFields = requiredField.filter(field => !(field in body));
+    if(missingFields.length > 0){
+        return res.status(400).json({ message: "Missing field: " + missingFields});
+    }
+   
+    const { keys, values } = keysAndValues(body);
+    query = `UPDATE users SET ${keys.join(',')} WHERE id = ?`
+    values.push(id)
+
+    connection.query(query, values,
+        (error, results) => {
+            if (error) {
+                res.status(500).send('error');
+            }
+            res.status(201).json({ "All the data was updated successfully": results.affectedRows })
+        })
+}
+//Delete records
+deleteUsers = async(req, res) => {
+    const id = req.params.id
+    const exists = await userExists(id);
+    if (!exists) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
     connection.query("DELETE FROM users WHERE id = ?", [id],
         (error, results) => {
             if (error) {
@@ -80,5 +150,6 @@ module.exports = {
     postUsers,
     deleteUsers,
     getUsersId,
-    patchUsers
+    patchUsers,
+    putUsers
 }
