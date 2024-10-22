@@ -1,4 +1,5 @@
 const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 const { sequelize } = require('../config/db')
 
 const User = sequelize.define(
@@ -19,7 +20,6 @@ const User = sequelize.define(
         email: {
             type: DataTypes.STRING(255),
             allowNull: false,
-
         },
         role: {
             type: DataTypes.ENUM('admin', 'user'),
@@ -29,6 +29,15 @@ const User = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false
         }
+    },
+    {
+        hooks: {
+            beforeCreate: async (user) => {
+                const saltRounds = 10;
+                user.password = await bcrypt.hash(user.password, saltRounds)
+            }
+        }
+
     }
 )
 

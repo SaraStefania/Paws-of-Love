@@ -2,6 +2,7 @@ const express = require('express')
 const { sequelize } = require('./config/db.js')
 const User = require('./models/userModels.js')
 const usersRoute = require('./routes/users.js')
+const authRoute = require('./routes/auth.js')
 require('dotenv').config();
 
 // Initialize the Express application
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 
 //Route
 app.use('/users', usersRoute);
+app.use('/auth', authRoute);
 
 //Check if the connection works
 sequelize.authenticate()
