@@ -4,9 +4,13 @@ const User = require('./models/userModels.js')
 const usersRoute = require('./routes/users.js')
 const authRoute = require('./routes/auth.js')
 require('dotenv').config();
+const cors = require('cors');
+
 
 // Initialize the Express application
 const app = express()
+// Use CORS
+app.use(cors());
 //Define the port for the server
 const PORT = process.env.PORT;
 //Parses incoming requests with a JSON payload
