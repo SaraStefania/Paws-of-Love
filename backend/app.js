@@ -19,7 +19,6 @@ app.use(express.json());
 //Main route
 app.get('/', (req, res) => {
   res.send('Main page')
-  next()
 })
 
 //Route
