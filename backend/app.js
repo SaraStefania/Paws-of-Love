@@ -27,7 +27,7 @@ sequelize.authenticate()
   .then(async () => {
     console.log('Connected to the database');
     // Create user table
-    await User.sync({ force: true });
+    await User.sync({alter: true });
     console.log('The user table was created');
     // Start the server
     app.listen(PORT, () => {

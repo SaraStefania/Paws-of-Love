@@ -13,13 +13,30 @@ const User = sequelize.define(
         firstName: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: {
+               min: 1,
+               max: 50,
+               notEmpty: true
+            }
         },
         lastName: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                min: 1,
+                max: 50,
+                notEmpty: true
+                
+            }
         },
         email: {
             type: DataTypes.STRING(255),
             allowNull: false,
+            validate: {
+                isEmail: {
+                    msg: 'the email is invalid'
+                }
+            }
         },
         role: {
             type: DataTypes.ENUM('admin', 'user'),
